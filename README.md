@@ -1,1 +1,1 @@
-# queryfy
+[![Build Status](https://travis-ci.org/edmocosta/queryfy.svg?branch=master)](https://travis-ci.org/edmocosta/queryfy)
