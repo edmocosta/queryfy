@@ -9,7 +9,7 @@ before_install:
 deploy:
   -
     provider: script
-    script: chmod +x .travis/deploy.sh && .travis/scripts/deploy.sh
+    script: chmod +x .travis/deploy.sh && .travis/deploy.sh
     skip_cleanup: true
     on:
       repo: edmocosta/queryfy
@@ -17,7 +17,7 @@ deploy:
       jdk: oraclejdk8
   -
     provider: script
-    script: chmod +x .travis/deploy.sh && .travis/scripts/deploy.sh
+    script: chmod +x .travis/deploy.sh && .travis/deploy.sh
     skip_cleanup: true
     on:
       repo: edmocosta/queryfy
