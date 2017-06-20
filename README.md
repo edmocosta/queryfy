@@ -16,7 +16,7 @@ Queryfy is a SQL-like language designed to parse strings in specific query objec
 </dependency>
 ```
     
-### [QueryDSL] (https://github.com/edmocosta/queryfy/wiki/QueryDSL)
+### [QueryDSL](https://github.com/edmocosta/queryfy/wiki/QueryDSL)
 ```xml    
 <dependency>
     <groupId>org.evcode.queryfy</groupId>
