@@ -21,6 +21,7 @@ import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.MemoMismatches;
 import org.parboiled.support.StringBuilderVar;
+import org.parboiled.support.StringVar;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -301,7 +302,16 @@ public class QueryParser extends BaseParser<Object> {
     }
 
     Rule Value() {
-        return FirstOf(Temporal(), Numeric(), String());
+        return FirstOf(Temporal(), Numeric(), String(), UserFunctionValue());
+    }
+
+    Rule UserFunctionValue() {
+        ListVar<Object> list = new ListVar<>(true);
+        StringVar function = new StringVar();
+        return Sequence(config.getGrammar().getUserFunctionPrefix(), Sequence(Selector(), function.set(match()), drop()),
+                OptionalWS(),
+                Ch('('), OptionalWS(), Optional(Arguments(list)), OptionalWS(), Ch(')'),
+                push(new UserFunctionNode(function.getAndClear(), list.isSet() ? list.getAndClear().toArray() : new Object[]{})));
     }
 
     //Operations
@@ -458,12 +468,16 @@ public class QueryParser extends BaseParser<Object> {
     boolean pushListOperation(List<Object> list) {
         ListOperatorType operator = (ListOperatorType) pop();
         String selector = (String) pop();
-        FilterNode node = new FilterNode(operator, selector, list);
+
+        List<Object> parsedValues = list.stream().map(this::parseValue)
+                .collect(Collectors.toList());
+
+        FilterNode node = new FilterNode(operator, selector, parsedValues);
         return push(node);
     }
 
     boolean pushFilterOperation() {
-        Object value = pop();
+        Object value = parseValue(pop());
         Operator operator = (Operator) pop();
         String selector = (String) pop();
         FilterNode node = new FilterNode(operator, selector, Collections.singletonList(value));
@@ -486,6 +500,28 @@ public class QueryParser extends BaseParser<Object> {
                 new OrNode(rightNode, leftNode);
 
         return push(logicalNode);
+    }
+
+    Object parseValue(Object value) {
+        if (value instanceof UserFunctionNode) {
+            Objects.requireNonNull(config.getUserFunctionInvoker());
+            UserFunctionNode functionValue = (UserFunctionNode) value;
+
+            if (functionValue.getArguments() != null && functionValue.getArguments().length > 0) {
+                for (int i = 0; i < functionValue.getArguments().length; i++) {
+                    if(functionValue.getArguments()[i] instanceof UserFunctionNode){
+                        functionValue.getArguments()[i] = parseValue(functionValue.getArguments()[i]);
+                    }
+                }
+            }
+
+            Object parsedValue = config.getUserFunctionInvoker()
+                    .invoke(functionValue.getFunction(), functionValue.getArguments());
+
+            return parsedValue;
+        }
+
+        return value;
     }
 
     Rule toOperator(Operator operatorType) {

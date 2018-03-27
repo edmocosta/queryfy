@@ -13,9 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.evcode.queryfy.core.parser.functions;
 
-package org.evcode.queryfy.core.parser;
+public interface UserFunctionInvoker {
 
-public interface UserFunctionResolver {
-    Object resolve(String function, Object... args);
+    Object invoke(String function, Object... args);
+
+    boolean canHandle(String function, Object... args);
+    
 }
