@@ -18,12 +18,12 @@ package org.evcode.queryfy.core.parser;
 import java.util.Arrays;
 import java.util.Objects;
 
-class UserFunctionNode {
+class CustomFunctionNode {
 
     private final String function;
     private final Object[] arguments;
 
-    public UserFunctionNode(String function, Object... arguments) {
+    public CustomFunctionNode(String function, Object... arguments) {
         this.function = function;
         this.arguments = arguments;
     }
@@ -40,7 +40,7 @@ class UserFunctionNode {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserFunctionNode that = (UserFunctionNode) o;
+        CustomFunctionNode that = (CustomFunctionNode) o;
         return Objects.equals(function, that.function) &&
                 Arrays.equals(arguments, that.arguments);
     }

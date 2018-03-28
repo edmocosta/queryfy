@@ -22,6 +22,7 @@ import org.parboiled.Rule;
 import org.parboiled.annotations.MemoMismatches;
 import org.parboiled.support.StringBuilderVar;
 import org.parboiled.support.StringVar;
+import org.parboiled.support.Var;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -302,16 +303,28 @@ public class QueryParser extends BaseParser<Object> {
     }
 
     Rule Value() {
-        return FirstOf(Temporal(), Numeric(), String(), UserFunctionValue());
+        return FirstOf(Temporal(), Numeric(), String(), CustomFunction());
     }
 
-    Rule UserFunctionValue() {
-        ListVar<Object> list = new ListVar<>(true);
+    Rule CustomFunction() {
+        Var<LinkedList<Object>> list = new Var<>();
         StringVar function = new StringVar();
-        return Sequence(config.getGrammar().getUserFunctionPrefix(), Sequence(Selector(), function.set(match()), drop()),
-                OptionalWS(),
-                Ch('('), OptionalWS(), Optional(Arguments(list)), OptionalWS(), Ch(')'),
-                push(new UserFunctionNode(function.getAndClear(), list.isSet() ? list.getAndClear().toArray() : new Object[]{})));
+        String functionPrefix = config.getGrammar().getCustomFunctionPrefix();
+
+        return Sequence(functionPrefix, Sequence(QualifiedSelector(), push(match()), function.set((String) pop())),
+                OptionalWS(), Ch('('), OptionalWS(), Optional(Sequence(list.set(new LinkedList<>()), CustomFunctionArguments(list))), OptionalWS(), Ch(')'),
+                push(new CustomFunctionNode(function.get(), list.isSet() ? list.get().toArray() : new Object[]{})));
+    }
+
+    Rule CustomFunctionArguments(Var<LinkedList<Object>> list) {
+        return Sequence(Value(), list.get().add(pop()),
+                ZeroOrMore(Sequence(OptionalWS(),
+                        ArgumentsSeparator(),
+                        OptionalWS(),
+                        Value(),
+                        list.get().add(pop()))
+                )
+        );
     }
 
     //Operations
@@ -503,19 +516,19 @@ public class QueryParser extends BaseParser<Object> {
     }
 
     Object parseValue(Object value) {
-        if (value instanceof UserFunctionNode) {
-            Objects.requireNonNull(config.getUserFunctionInvoker());
-            UserFunctionNode functionValue = (UserFunctionNode) value;
+        if (value instanceof CustomFunctionNode) {
+            Objects.requireNonNull(config.getCustomFunctionInvoker());
+            CustomFunctionNode functionValue = (CustomFunctionNode) value;
 
             if (functionValue.getArguments() != null && functionValue.getArguments().length > 0) {
                 for (int i = 0; i < functionValue.getArguments().length; i++) {
-                    if(functionValue.getArguments()[i] instanceof UserFunctionNode){
+                    if (functionValue.getArguments()[i] instanceof CustomFunctionNode) {
                         functionValue.getArguments()[i] = parseValue(functionValue.getArguments()[i]);
                     }
                 }
             }
 
-            Object parsedValue = config.getUserFunctionInvoker()
+            Object parsedValue = config.getCustomFunctionInvoker()
                     .invoke(functionValue.getFunction(), functionValue.getArguments());
 
             return parsedValue;

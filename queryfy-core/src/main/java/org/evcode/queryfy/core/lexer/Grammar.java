@@ -37,7 +37,7 @@ public interface Grammar {
         return ",";
     }
 
-    default String getUserFunctionPrefix() {
+    default String getCustomFunctionPrefix() {
         return "@";
     }
 

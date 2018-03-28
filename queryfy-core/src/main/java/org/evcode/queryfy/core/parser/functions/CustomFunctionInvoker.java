@@ -15,7 +15,7 @@
  */
 package org.evcode.queryfy.core.parser.functions;
 
-public interface UserFunctionInvoker {
+public interface CustomFunctionInvoker {
 
     Object invoke(String function, Object... args);
 
