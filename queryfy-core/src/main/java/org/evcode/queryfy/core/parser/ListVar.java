@@ -23,12 +23,20 @@ class ListVar<T> extends Var<LinkedList<T>> {
 
     private LinkedList<T> values = new LinkedList<>();
     private Class valueType;
+    private boolean allowMultipleTypes = false;
+
+    public ListVar() {
+    }
+
+    public ListVar(boolean allowMultipleTypes) {
+        this.allowMultipleTypes = allowMultipleTypes;
+    }
 
     public boolean add(T value) {
         if (isNotSet()) {
             set(values);
         }
-        if (valueType != null && !valueType.equals(value.getClass())) {
+        if (!allowMultipleTypes && valueType != null && !valueType.equals(value.getClass())) {
             throw new IllegalArgumentException("Illegal value type. An instance of " + valueType.getName() + " was expected");
         }
 

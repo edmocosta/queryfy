@@ -37,6 +37,10 @@ public interface Grammar {
         return ",";
     }
 
+    default String getCustomFunctionPrefix() {
+        return "@";
+    }
+
     Set<String> getOperatorSymbols(Operator type);
 
     Operator getOperator(String operator);

@@ -17,14 +17,18 @@ package org.evcode.queryfy.core.parser;
 
 import org.evcode.queryfy.core.lexer.DefaultGrammar;
 import org.evcode.queryfy.core.lexer.Grammar;
+import org.evcode.queryfy.core.parser.functions.CustomFunctionInvoker;
+import org.evcode.queryfy.core.parser.functions.DefaultCustomFunctionInvoker;
 
 public final class ParserConfig {
 
     public static final ParserConfig DEFAULT = ParserConfig.builder().build();
     private final Grammar grammar;
+    private final CustomFunctionInvoker customFunctionInvoker;
 
-    private ParserConfig(Grammar grammar) {
+    private ParserConfig(Grammar grammar, CustomFunctionInvoker customFunctionInvoker) {
         this.grammar = grammar;
+        this.customFunctionInvoker = customFunctionInvoker;
     }
 
     public static Builder builder() {
@@ -35,17 +39,28 @@ public final class ParserConfig {
         return grammar;
     }
 
+    public CustomFunctionInvoker getCustomFunctionInvoker() {
+        return customFunctionInvoker;
+    }
+
     public static class Builder {
 
         private Grammar grammar = new DefaultGrammar();
+        private CustomFunctionInvoker customFunctionInvoker = new DefaultCustomFunctionInvoker();
 
         public Builder withGrammar(final Grammar grammar) {
             this.grammar = grammar;
             return this;
         }
 
+        public Builder withCustomFunctionInvoker(final CustomFunctionInvoker resolver) {
+            this.customFunctionInvoker = resolver;
+            return this;
+        }
+
+
         public ParserConfig build() {
-            return new ParserConfig(grammar);
+            return new ParserConfig(grammar, customFunctionInvoker);
         }
     }
 }

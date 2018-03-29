@@ -21,6 +21,8 @@ import org.parboiled.BaseParser;
 import org.parboiled.Rule;
 import org.parboiled.annotations.MemoMismatches;
 import org.parboiled.support.StringBuilderVar;
+import org.parboiled.support.StringVar;
+import org.parboiled.support.Var;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -301,7 +303,28 @@ public class QueryParser extends BaseParser<Object> {
     }
 
     Rule Value() {
-        return FirstOf(Temporal(), Numeric(), String());
+        return FirstOf(Temporal(), Numeric(), String(), CustomFunction());
+    }
+
+    Rule CustomFunction() {
+        Var<LinkedList<Object>> list = new Var<>();
+        StringVar function = new StringVar();
+        String functionPrefix = config.getGrammar().getCustomFunctionPrefix();
+
+        return Sequence(functionPrefix, Sequence(QualifiedSelector(), push(match()), function.set((String) pop())),
+                OptionalWS(), Ch('('), OptionalWS(), Optional(Sequence(list.set(new LinkedList<>()), CustomFunctionArguments(list))), OptionalWS(), Ch(')'),
+                push(new CustomFunctionNode(function.get(), list.isSet() ? list.get().toArray() : new Object[]{})));
+    }
+
+    Rule CustomFunctionArguments(Var<LinkedList<Object>> list) {
+        return Sequence(Value(), list.get().add(pop()),
+                ZeroOrMore(Sequence(OptionalWS(),
+                        ArgumentsSeparator(),
+                        OptionalWS(),
+                        Value(),
+                        list.get().add(pop()))
+                )
+        );
     }
 
     //Operations
@@ -458,12 +481,16 @@ public class QueryParser extends BaseParser<Object> {
     boolean pushListOperation(List<Object> list) {
         ListOperatorType operator = (ListOperatorType) pop();
         String selector = (String) pop();
-        FilterNode node = new FilterNode(operator, selector, list);
+
+        List<Object> parsedValues = list.stream().map(this::parseValue)
+                .collect(Collectors.toList());
+
+        FilterNode node = new FilterNode(operator, selector, parsedValues);
         return push(node);
     }
 
     boolean pushFilterOperation() {
-        Object value = pop();
+        Object value = parseValue(pop());
         Operator operator = (Operator) pop();
         String selector = (String) pop();
         FilterNode node = new FilterNode(operator, selector, Collections.singletonList(value));
@@ -486,6 +513,28 @@ public class QueryParser extends BaseParser<Object> {
                 new OrNode(rightNode, leftNode);
 
         return push(logicalNode);
+    }
+
+    Object parseValue(Object value) {
+        if (value instanceof CustomFunctionNode) {
+            Objects.requireNonNull(config.getCustomFunctionInvoker());
+            CustomFunctionNode functionValue = (CustomFunctionNode) value;
+
+            if (functionValue.getArguments() != null && functionValue.getArguments().length > 0) {
+                for (int i = 0; i < functionValue.getArguments().length; i++) {
+                    if (functionValue.getArguments()[i] instanceof CustomFunctionNode) {
+                        functionValue.getArguments()[i] = parseValue(functionValue.getArguments()[i]);
+                    }
+                }
+            }
+
+            Object parsedValue = config.getCustomFunctionInvoker()
+                    .invoke(functionValue.getFunction(), functionValue.getArguments());
+
+            return parsedValue;
+        }
+
+        return value;
     }
 
     Rule toOperator(Operator operatorType) {
