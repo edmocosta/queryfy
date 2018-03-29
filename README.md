@@ -12,7 +12,7 @@ Queryfy is a SQL-like language designed to parse strings in specific query objec
 <dependency>
     <groupId>org.evcode.queryfy</groupId>
     <artifactId>queryfy-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 </dependency>
 ```
     
@@ -21,7 +21,7 @@ Queryfy is a SQL-like language designed to parse strings in specific query objec
 <dependency>
     <groupId>org.evcode.queryfy</groupId>
     <artifactId>queryfy-querydsl-jpa</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
 </dependency>
 ```
 
