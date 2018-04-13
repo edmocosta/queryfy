@@ -1,7 +1,5 @@
 ![Queryfy](docs/img/queryfy.png)
 
-## Queryfy
-
 [![Build Status](https://travis-ci.org/edmocosta/queryfy.svg?branch=master)](https://travis-ci.org/edmocosta/queryfy)
 
 Queryfy is a simple SQL-like language designed to provide a safe and flexible way to filter, sort and to paginate data over REST APIs and Front-end as well.
