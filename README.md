@@ -2,10 +2,40 @@
 
 ## Queryfy
 
-Queryfy is a SQL-like language designed to parse strings in specific query objects.
-
 [![Build Status](https://travis-ci.org/edmocosta/queryfy.svg?branch=master)](https://travis-ci.org/edmocosta/queryfy)
 
+Queryfy is a simple SQL-like language designed to provide a safe and flexible way to filter, sort and to paginate data over REST APIs and Front-end as well.
+
+* As it is NOT SQL, there is no SQL Injection.
+
+* The **Queryfy-Core** is responsible for build the abstract syntax tree (AST) from the query string and use a provided visitor to build the filter object (eg. JPAQuery, etc). 
+
+* You can use the existing implementation (QueryDSL JPA) or implement your own visitor.
+
+#### QueryDSL Example 
+
+```java
+
+EntityManager em = ...;
+String query = "select name, age where age > 18 order by name limit 0, 100";
+
+JPAQueryDslParser parser = new JPAQueryDslParser(em);
+
+//Create a evaluation context. All paths added here will be available on the query syntax
+QueryDslContext context = QueryDslContext.from(QTest.test)
+                .withPath("name", QTest.test.name)
+                .withPath("age", QTest.test.age)
+                .withPath("other.id", QTest.test.other.id)
+                .withPath("other.name", QTest.test.other.name)
+                .build();
+                
+//Parse the query string into a QueryDSL JPAQuery object
+JPAQuery jpaQuery = parser.parse(query, context);
+
+//List only projected fields (name and age)
+List<Test> list = jpaQuery.list(context.getProjectionOrDefault());
+
+```
 
 ### Usage
 ```xml
@@ -25,6 +55,6 @@ Queryfy is a SQL-like language designed to parse strings in specific query objec
 </dependency>
 ```
 
-### Please see
+### See more
 
 [Documentation](https://github.com/edmocosta/queryfy/wiki)
