@@ -19,9 +19,12 @@ import com.mysema.query.jpa.impl.JPAQuery;
 import com.mysema.query.types.OrderSpecifier;
 import org.evcode.queryfy.core.parser.ParserConfig;
 import org.evcode.queryfy.querydsl.core.QueryDslContext;
+import org.evcode.queryfy.querydsl.core.QueryDslEvaluationResult;
 import org.evcode.queryfy.querydsl.core.QueryDslEvaluator;
 
 import javax.persistence.EntityManager;
+import java.util.List;
+import java.util.Objects;
 
 public class JPAQueryDslParser {
 
@@ -31,29 +34,50 @@ public class JPAQueryDslParser {
         this.em = em;
     }
 
-    public JPAQuery parse(String expression, QueryDslContext context) {
+    public JPAEvaluatedQuery parse(String expression, QueryDslContext context) {
         return parse(expression, context, ParserConfig.DEFAULT);
     }
 
-    public JPAQuery parse(String expression, QueryDslContext context, ParserConfig config) {
+    public JPAEvaluatedQuery parse(String expression, QueryDslContext context, ParserConfig config) {
         QueryDslEvaluator evaluator = new QueryDslEvaluator();
-        evaluator.evaluate(expression, context, config);
+        QueryDslEvaluationResult eval = evaluator.evaluate(expression, context, config);
 
-        JPAQuery query = new JPAQuery(em)
+        JPAQuery query = new JPAEvaluatedQuery(em)
                 .from(context.getEntityPath());
 
-        if (context.getPredicate() != null) {
-            query.where(context.getPredicate());
+        if (eval.getPredicate() != null) {
+            query.where(eval.getPredicate());
         }
 
-        if (context.getQueryModifiers() != null) {
-            query.restrict(context.getQueryModifiers());
+        if (eval.getQueryModifiers() != null) {
+            query.restrict(eval.getQueryModifiers());
         }
 
-        if (context.getOrderSpecifiers() != null && !context.getOrderSpecifiers().isEmpty()) {
-            query.orderBy(context.getOrderSpecifiers().toArray(new OrderSpecifier[0]));
+        if (eval.getOrderSpecifiers() != null && !eval.getOrderSpecifiers().isEmpty()) {
+            query.orderBy(eval.getOrderSpecifiers().toArray(new OrderSpecifier[0]));
         }
 
-        return query;
+        return new JPAEvaluatedQuery(eval);
+    }
+
+    public static class JPAEvaluatedQuery extends JPAQuery {
+        private QueryDslEvaluationResult evaluationResult;
+
+        JPAEvaluatedQuery(QueryDslEvaluationResult evaluationResult) {
+            this.evaluationResult = evaluationResult;
+        }
+
+        JPAEvaluatedQuery(EntityManager em) {
+            super(em);
+        }
+
+        public QueryDslEvaluationResult getEvaluationResult() {
+            return evaluationResult;
+        }
+
+        public <RT> List<RT> listProjectedFields() {
+            Objects.requireNonNull(evaluationResult.getProjection());
+            return super.list(evaluationResult.getProjection());
+        }
     }
 }
