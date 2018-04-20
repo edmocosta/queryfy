@@ -66,13 +66,25 @@ public class MongodbContext {
         public Builder() {
         }
 
+        public Builder withPath(String name) {
+            return withPath(name, name);
+        }
+
         public Builder withPath(String name, String path) {
             return withQueryPath(name, path).withProjectionPath(name, path);
+        }
+
+        public Builder withQueryPath(String name) {
+            return withQueryPath(name, name);
         }
 
         public Builder withQueryPath(String name, String path) {
             queryPaths.put(name, path);
             return this;
+        }
+
+        public Builder withProjectionPath(String name) {
+            return withProjectionPath(name, name);
         }
 
         public Builder withProjectionPath(String name, String path) {
