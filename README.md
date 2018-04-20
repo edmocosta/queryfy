@@ -27,11 +27,11 @@ QueryDslContext context = QueryDslContext.from(QTest.test)
                 .withPath("other.name", QTest.test.other.name)
                 .build();
                 
-//Parse the query string into a QueryDSL JPAQuery object
-JPAQuery jpaQuery = parser.parse(query, context);
+//Parse the query string into a QueryDSL JPAQuery or JPAEvaluatedQuery object
+JPAEvaluatedQuery jpaQuery = parser.parseAndFind(query, context);
 
-//List only projected fields (name and age)
-List<Test> list = jpaQuery.list(context.getProjectionOrDefault());
+//List applying the projections fields (name and age)
+List<Test> list = jpaQuery.listWithProjections();
 
 ```
 

@@ -120,10 +120,6 @@ public class MongodbVisitor implements Visitor<Bson, MongodbContext> {
             return Filters.ne(path, BsonNull.VALUE);
         }
 
-        if (node.getOperator() == SelectorOperatorType.IS_NOT_NULL) {
-            return Filters.ne(path, BsonNull.VALUE);
-        }
-
         throw new UnsupportedOperationException("Operation not supported '" + node.getOperator().name() + "'");
     }
 
