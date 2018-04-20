@@ -8,9 +8,26 @@ Queryfy is a simple SQL-like language designed to provide a safe and flexible wa
 
 * The **Queryfy-Core** is responsible for build the abstract syntax tree (AST) from the query string and use a provided visitor to build the filter object (eg. JPAQuery, etc). 
 
-* You can use the existing implementation (QueryDSL JPA) or implement your own visitor.
+* You can use the existing implementation (QueryDSL JPA, MongoDB (Bson)) or implement your own visitor.
 
-#### QueryDSL Example 
+### Usage
+```xml
+<dependency>
+    <groupId>org.evcode.queryfy</groupId>
+    <artifactId>queryfy-core</artifactId>
+    <version>1.2-SNAPSHOT</version>
+</dependency>
+```
+
+#### [QueryDSL](https://github.com/edmocosta/queryfy/wiki/QueryDSL)
+
+```xml
+<dependency>
+    <groupId>org.evcode.queryfy</groupId>
+    <artifactId>queryfy-querydsl-jpa</artifactId>
+    <version>1.2-SNAPSHOT</version>
+</dependency>
+```
 
 ```java
 
@@ -33,24 +50,6 @@ JPAEvaluatedQuery jpaQuery = parser.parseAndFind(query, context);
 //List applying the projections fields (name and age)
 List<Test> list = jpaQuery.listWithProjections();
 
-```
-
-### Usage
-```xml
-<dependency>
-    <groupId>org.evcode.queryfy</groupId>
-    <artifactId>queryfy-core</artifactId>
-    <version>1.1-SNAPSHOT</version>
-</dependency>
-```
-    
-### [QueryDSL](https://github.com/edmocosta/queryfy/wiki/QueryDSL)
-```xml    
-<dependency>
-    <groupId>org.evcode.queryfy</groupId>
-    <artifactId>queryfy-querydsl-jpa</artifactId>
-    <version>1.1-SNAPSHOT</version>
-</dependency>
 ```
 
 ### See more
