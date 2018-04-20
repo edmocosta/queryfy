@@ -16,18 +16,31 @@
 
 package org.evcode.queryfy.mongodb;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import org.evcode.queryfy.mongodb.converter.DateTimeConverter;
+import org.evcode.queryfy.mongodb.converter.TypeConverter;
+
+import java.util.*;
 
 public class MongodbContext {
 
     private final Map<String, String> queryPaths;
     private final Map<String, String> projectionPaths;
+    private Set<TypeConverter> typeConverters = createDefaultTypeConverters();
 
     protected MongodbContext(Map<String, String> queryPaths, Map<String, String> projectionPaths) {
         this.queryPaths = queryPaths;
         this.projectionPaths = projectionPaths;
+    }
+
+    protected MongodbContext(Map<String, String> queryPaths, Map<String, String> projectionPaths,
+                             Set<TypeConverter> typeConverters) {
+        this.queryPaths = queryPaths;
+        this.projectionPaths = projectionPaths;
+        this.typeConverters = typeConverters != null ? typeConverters : Collections.emptySet();
+    }
+
+    private static Set<TypeConverter> createDefaultTypeConverters() {
+        return new HashSet<>(Arrays.asList(new DateTimeConverter()));
     }
 
     public static Builder builder() {
@@ -40,6 +53,10 @@ public class MongodbContext {
 
     public Map<String, String> getProjectionPaths() {
         return Collections.unmodifiableMap(projectionPaths);
+    }
+
+    public Set<TypeConverter> getTypeConverters() {
+        return Collections.unmodifiableSet(typeConverters);
     }
 
     public String resolveProjectionPath(String path) {
@@ -60,8 +77,9 @@ public class MongodbContext {
 
     public static class Builder {
 
-        private Map<String, String> queryPaths = new HashMap<>();
-        private Map<String, String> projectionPaths = new HashMap<>();
+        private final Set<TypeConverter> typeConverters = createDefaultTypeConverters();
+        private final Map<String, String> queryPaths = new HashMap<>();
+        private final Map<String, String> projectionPaths = new HashMap<>();
 
         public Builder() {
         }
@@ -87,13 +105,23 @@ public class MongodbContext {
             return withProjectionPath(name, name);
         }
 
+        public Builder withTypeConverter(TypeConverter converter) {
+            typeConverters.add(converter);
+            return this;
+        }
+
+        public Builder withNoTypeConverters() {
+            typeConverters.clear();
+            return this;
+        }
+
         public Builder withProjectionPath(String name, String path) {
             projectionPaths.put(name, path);
             return this;
         }
 
         public MongodbContext build() {
-            return new MongodbContext(queryPaths, projectionPaths);
+            return new MongodbContext(queryPaths, projectionPaths, typeConverters);
         }
     }
 }

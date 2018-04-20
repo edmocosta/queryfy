@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.evcode.queryfy.core.parser.functions.custom;
+package org.evcode.queryfy.core.parser.functions;
 
 import java.util.Arrays;
 import java.util.Collections;

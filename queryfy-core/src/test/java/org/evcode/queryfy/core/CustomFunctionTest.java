@@ -18,8 +18,8 @@ package org.evcode.queryfy.core;
 
 import org.evcode.queryfy.core.parser.ParserConfig;
 import org.evcode.queryfy.core.parser.ast.FilterNode;
-import org.evcode.queryfy.core.parser.functions.CustomFunctionInvoker;
-import org.evcode.queryfy.core.parser.functions.DefaultCustomFunctionInvoker;
+import org.evcode.queryfy.core.parser.functions.FunctionInvoker;
+import org.evcode.queryfy.core.parser.functions.DefaultFunctionInvoker;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,14 +61,14 @@ public class CustomFunctionTest {
     public void checkValue(String query, Object expectedValue) {
         FilterNode node = (FilterNode) Evaluator.parse(query,
                 ParserConfig.builder()
-                        .withCustomFunctionInvoker(DefaultCustomFunctionInvoker.with(new HelloFunctionInvoker()))
+                        .withFunctionInvoker(DefaultFunctionInvoker.with(new HelloFunctionInvoker()))
                         .build())
                 .get(0);
 
         Assert.assertEquals(expectedValue, node.getArgs().get(0));
     }
 
-    public static class HelloFunctionInvoker implements CustomFunctionInvoker {
+    public static class HelloFunctionInvoker implements FunctionInvoker {
         @Override
         public Object invoke(String function, Object... args) {
             return "Hello function";

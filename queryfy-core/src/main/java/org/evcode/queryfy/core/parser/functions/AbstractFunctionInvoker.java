@@ -14,16 +14,14 @@
  *  limitations under the License.
  */
 
-package org.evcode.queryfy.core.parser.functions.custom;
-
-import org.evcode.queryfy.core.parser.functions.CustomFunctionInvoker;
+package org.evcode.queryfy.core.parser.functions;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class AbstractFunctionInvoker implements CustomFunctionInvoker {
+public abstract class AbstractFunctionInvoker implements FunctionInvoker {
 
     protected final HashMap<String, List<Class[]>> functions = new HashMap<>();
 

@@ -24,8 +24,13 @@ import org.bson.conversions.Bson;
 import org.evcode.queryfy.core.Visitor;
 import org.evcode.queryfy.core.operator.*;
 import org.evcode.queryfy.core.parser.ast.*;
+import org.evcode.queryfy.mongodb.converter.TypeConverter;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MongodbVisitor implements Visitor<Bson, MongodbContext> {
 
@@ -66,58 +71,58 @@ public class MongodbVisitor implements Visitor<Bson, MongodbContext> {
 
         //Comparision types
         if (node.getOperator() == ComparisionOperatorType.EQUAL) {
-            return Filters.eq(path, node.getArgs().get(0));
+            return Filters.eq(path, asValue(node.getArgs().get(0), param));
         }
 
         if (node.getOperator() == ComparisionOperatorType.NOT_EQUAL) {
-            return Filters.ne(path, node.getArgs().get(0));
+            return Filters.ne(path, asValue(node.getArgs().get(0), param));
         }
 
         if (node.getOperator() == ComparisionOperatorType.GREATER) {
-            return Filters.gt(path, node.getArgs().get(0));
+            return Filters.gt(path, asValue(node.getArgs().get(0), param));
         }
 
         if (node.getOperator() == ComparisionOperatorType.GREATER_EQUAL) {
-            return Filters.gte(path, node.getArgs().get(0));
+            return Filters.gte(path, asValue(node.getArgs().get(0), param));
         }
 
         if (node.getOperator() == ComparisionOperatorType.LOWER) {
-            return Filters.lt(path, node.getArgs().get(0));
+            return Filters.lt(path, asValue(node.getArgs().get(0), param));
         }
 
         if (node.getOperator() == ComparisionOperatorType.LOWER_EQUAL) {
-            return Filters.lte(path, node.getArgs().get(0));
+            return Filters.lte(path, asValue(node.getArgs().get(0), param));
         }
 
         //List types
         if (node.getOperator() == ListOperatorType.IN) {
-            return Filters.in(path, node.getArgs());
+            return Filters.in(path, asValue(node.getArgs(), param));
         }
 
         if (node.getOperator() == ListOperatorType.NOT_IN) {
-            return Filters.nin(path, node.getArgs());
+            return Filters.nin(path, asValue(node.getArgs(), param));
         }
 
         //Selector operator types
         if (node.getOperator() == SelectorOperatorType.IS_TRUE ||
                 node.getOperator() == SelectorOperatorType.IS_FALSE) {
-            return Filters.eq(path, node.getOperator() == SelectorOperatorType.IS_TRUE);
+            return Filters.eq(path, asValue(node.getOperator() == SelectorOperatorType.IS_TRUE, param));
         }
 
         if (node.getOperator() == SelectorOperatorType.IS_EMPTY) {
-            return Filters.eq(path, "");
+            return Filters.eq(path, asValue("", param));
         }
 
         if (node.getOperator() == SelectorOperatorType.IS_NOT_EMPTY) {
-            return Filters.ne(path, "");
+            return Filters.ne(path, asValue("", param));
         }
 
         if (node.getOperator() == SelectorOperatorType.IS_NULL) {
-            return Filters.eq(path, BsonNull.VALUE);
+            return Filters.eq(path, asValue(BsonNull.VALUE, param));
         }
 
         if (node.getOperator() == SelectorOperatorType.IS_NOT_NULL) {
-            return Filters.ne(path, BsonNull.VALUE);
+            return Filters.ne(path, asValue(BsonNull.VALUE, param));
         }
 
         throw new UnsupportedOperationException("Operation not supported '" + node.getOperator().name() + "'");
@@ -138,8 +143,32 @@ public class MongodbVisitor implements Visitor<Bson, MongodbContext> {
         return node;
     }
 
+    protected Object asValue(List<Object> nodeValues, MongodbContext context) {
+        return nodeValues.stream()
+                .map(p -> asValue(p, context))
+                .collect(Collectors.toList());
+    }
+
+    protected Object asValue(Object nodeValue, MongodbContext context) {
+        Set<TypeConverter> converters = context.getTypeConverters();
+        if (converters == null || converters.isEmpty()) {
+            return nodeValue;
+        }
+
+        Optional<TypeConverter> typeConverter = converters.stream()
+                .filter(p -> p.isSupported(nodeValue.getClass()))
+                .findFirst();
+
+        if (!typeConverter.isPresent()) {
+            return nodeValue;
+        }
+
+        return typeConverter.get().convert(nodeValue);
+    }
+
     protected Pattern asLikeRegex(String value) {
         final StringBuilder rv = new StringBuilder(value.length() + 4);
+
         if (!value.startsWith("%")) {
             rv.append('^');
         }
