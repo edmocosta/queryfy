@@ -34,48 +34,68 @@ public class JPAQueryDslParser {
         this.em = em;
     }
 
-    public JPAEvaluatedQuery parse(String expression, QueryDslContext context) {
+    public QueryDslEvaluationResult parse(String expression, QueryDslContext context) {
         return parse(expression, context, ParserConfig.DEFAULT);
     }
 
-    public JPAEvaluatedQuery parse(String expression, QueryDslContext context, ParserConfig config) {
+    public QueryDslEvaluationResult parse(String expression, QueryDslContext context, ParserConfig config) {
         QueryDslEvaluator evaluator = new QueryDslEvaluator();
         QueryDslEvaluationResult eval = evaluator.evaluate(expression, context, config);
+        return eval;
+    }
 
-        JPAQuery query = new JPAEvaluatedQuery(em)
-                .from(context.getEntityPath());
+    public JPAEvaluatedQuery parseAndFind(String expression, QueryDslContext context) {
+        return parseAndFind(expression, context, ParserConfig.DEFAULT);
+    }
 
-        if (eval.getPredicate() != null) {
-            query.where(eval.getPredicate());
+    public JPAEvaluatedQuery parseAndFind(String expression, QueryDslContext context, ParserConfig config) {
+        QueryDslEvaluationResult evaluationResult = parse(expression, context, config);
+        JPAEvaluatedQuery jpaQuery = new JPAEvaluatedQuery(em, evaluationResult);
+        return apply(jpaQuery, context, evaluationResult);
+    }
+
+    public <T extends JPAQuery> T parseAndApply(T query, String expression, QueryDslContext context) {
+        return parseAndApply(query, expression, context, ParserConfig.DEFAULT);
+    }
+
+    public <T extends JPAQuery> T parseAndApply(T query, String expression, QueryDslContext context, ParserConfig config) {
+        QueryDslEvaluationResult evaluationResult = parse(expression, context, config);
+        return apply(query, context, evaluationResult);
+    }
+
+    public <T extends JPAQuery> T apply(T query, QueryDslContext context, QueryDslEvaluationResult evaluationResult) {
+        if (context.getEntityPath() != null) {
+            query.from(context.getEntityPath());
         }
 
-        if (eval.getQueryModifiers() != null) {
-            query.restrict(eval.getQueryModifiers());
+        if (evaluationResult.getPredicate() != null) {
+            query.where(evaluationResult.getPredicate());
         }
 
-        if (eval.getOrderSpecifiers() != null && !eval.getOrderSpecifiers().isEmpty()) {
-            query.orderBy(eval.getOrderSpecifiers().toArray(new OrderSpecifier[0]));
+        if (evaluationResult.getQueryModifiers() != null) {
+            query.restrict(evaluationResult.getQueryModifiers());
         }
 
-        return new JPAEvaluatedQuery(eval);
+        if (evaluationResult.getOrderSpecifiers() != null && !evaluationResult.getOrderSpecifiers().isEmpty()) {
+            query.orderBy(evaluationResult.getOrderSpecifiers().toArray(new OrderSpecifier[0]));
+        }
+
+        return query;
     }
 
     public static class JPAEvaluatedQuery extends JPAQuery {
         private QueryDslEvaluationResult evaluationResult;
 
-        JPAEvaluatedQuery(QueryDslEvaluationResult evaluationResult) {
-            this.evaluationResult = evaluationResult;
-        }
-
-        JPAEvaluatedQuery(EntityManager em) {
+        public JPAEvaluatedQuery(EntityManager em, QueryDslEvaluationResult evaluationResult) {
             super(em);
+            this.evaluationResult = evaluationResult;
         }
 
         public QueryDslEvaluationResult getEvaluationResult() {
             return evaluationResult;
         }
 
-        public <RT> List<RT> listProjectedFields() {
+        public <RT> List<RT> listWithProjections() {
             Objects.requireNonNull(evaluationResult.getProjection());
             return super.list(evaluationResult.getProjection());
         }
