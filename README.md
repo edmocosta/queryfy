@@ -15,7 +15,7 @@ Queryfy is a simple SQL-like language designed to provide a safe and flexible wa
 <dependency>
     <groupId>org.evcode.queryfy</groupId>
     <artifactId>queryfy-core</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -25,7 +25,7 @@ Queryfy is a simple SQL-like language designed to provide a safe and flexible wa
 <dependency>
     <groupId>org.evcode.queryfy</groupId>
     <artifactId>queryfy-querydsl-jpa</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
 </dependency>
 ```
 
