@@ -19,7 +19,6 @@ import com.mysema.query.QueryModifiers;
 import com.mysema.query.types.Expression;
 import com.mysema.query.types.OrderSpecifier;
 import com.mysema.query.types.Predicate;
-import com.mysema.query.types.QBean;
 import org.evcode.queryfy.core.Evaluator;
 import org.evcode.queryfy.core.parser.ParserConfig;
 import org.evcode.queryfy.core.parser.ast.*;
@@ -31,33 +30,37 @@ public final class QueryDslEvaluator {
 
     private final QueryDslVisitor visitor = new QueryDslVisitor();
 
-    public void evaluate(String expression, QueryDslContext context) {
-        evaluate(expression, context, ParserConfig.DEFAULT);
+    public QueryDslEvaluationResult evaluate(String expression, QueryDslContext context) {
+        return evaluate(expression, context, ParserConfig.DEFAULT);
     }
 
-    public void evaluate(String expression, QueryDslContext context, ParserConfig config) {
+    public QueryDslEvaluationResult evaluate(String expression, QueryDslContext context, ParserConfig config) {
         List<Node> nodeList = Evaluator.parse(expression, config);
+        QueryDslEvaluationResult eval = new QueryDslEvaluationResult();
+
         for (Node node : nodeList) {
             if (node instanceof LogicalNode) {
                 Predicate filter = node.accept(visitor, context);
                 if (node instanceof OrNode) {
-                    context.addOr(filter);
+                    eval.addOr(filter);
                 } else {
-                    context.addAnd(filter);
+                    eval.addAnd(filter);
                 }
             } else if (node instanceof FilterNode) {
                 Predicate filterNode = node.accept(visitor, context);
-                context.addAnd(filterNode);
+                eval.addAnd(filterNode);
             } else if (node instanceof OrderNode) {
                 LinkedList order = (LinkedList<OrderSpecifier>) node.accept(visitor, context);
-                context.setOrderSpecifiers(order);
+                eval.setOrderSpecifiers(order);
             } else if (node instanceof LimitNode) {
                 QueryModifiers modifiers = (QueryModifiers) (Object) node.accept(visitor, context);
-                context.setQueryModifiers(modifiers);
+                eval.setQueryModifiers(modifiers);
             } else if (node instanceof ProjectionNode) {
-                Expression projection = (QBean) node.accept(visitor, context);
-                context.setProjection(projection);
+                Expression projection = node.accept(visitor, context);
+                eval.setProjection(projection);
             }
         }
+
+        return eval;
     }
 }

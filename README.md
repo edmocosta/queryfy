@@ -8,9 +8,26 @@ Queryfy is a simple SQL-like language designed to provide a safe and flexible wa
 
 * The **Queryfy-Core** is responsible for build the abstract syntax tree (AST) from the query string and use a provided visitor to build the filter object (eg. JPAQuery, etc). 
 
-* You can use the existing implementation (QueryDSL JPA) or implement your own visitor.
+* You can use the existing implementation (QueryDSL JPA, MongoDB (Bson)) or implement your own visitor.
 
-#### QueryDSL Example 
+### Usage
+```xml
+<dependency>
+    <groupId>org.evcode.queryfy</groupId>
+    <artifactId>queryfy-core</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
+</dependency>
+```
+
+#### [QueryDSL](https://github.com/edmocosta/queryfy/wiki/QueryDSL)
+
+```xml
+<dependency>
+    <groupId>org.evcode.queryfy</groupId>
+    <artifactId>queryfy-querydsl-jpa</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
+</dependency>
+```
 
 ```java
 
@@ -27,30 +44,12 @@ QueryDslContext context = QueryDslContext.from(QTest.test)
                 .withPath("other.name", QTest.test.other.name)
                 .build();
                 
-//Parse the query string into a QueryDSL JPAQuery object
-JPAQuery jpaQuery = parser.parse(query, context);
+//Parse the query string into a QueryDSL JPAQuery or JPAEvaluatedQuery object
+JPAEvaluatedQuery jpaQuery = parser.parseAndFind(query, context);
 
-//List only projected fields (name and age)
-List<Test> list = jpaQuery.list(context.getProjectionOrDefault());
+//List applying the projections fields (name and age)
+List<Test> list = jpaQuery.listWithProjections();
 
-```
-
-### Usage
-```xml
-<dependency>
-    <groupId>org.evcode.queryfy</groupId>
-    <artifactId>queryfy-core</artifactId>
-    <version>1.1-SNAPSHOT</version>
-</dependency>
-```
-    
-### [QueryDSL](https://github.com/edmocosta/queryfy/wiki/QueryDSL)
-```xml    
-<dependency>
-    <groupId>org.evcode.queryfy</groupId>
-    <artifactId>queryfy-querydsl-jpa</artifactId>
-    <version>1.1-SNAPSHOT</version>
-</dependency>
 ```
 
 ### See more

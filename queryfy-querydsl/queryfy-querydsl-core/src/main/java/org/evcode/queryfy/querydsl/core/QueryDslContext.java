@@ -15,27 +15,17 @@
  */
 package org.evcode.queryfy.querydsl.core;
 
-import com.mysema.query.BooleanBuilder;
-import com.mysema.query.QueryModifiers;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Expression;
-import com.mysema.query.types.OrderSpecifier;
-import com.mysema.query.types.Predicate;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 public class QueryDslContext {
 
     private final Map<String, Expression> queryPaths;
     private final Map<String, Expression> projectionPaths;
-    private final BooleanBuilder predicateBuilder = new BooleanBuilder();
-    private LinkedList<OrderSpecifier> orderSpecifiers = new LinkedList<>();
-
-    private Expression projection;
-    private QueryModifiers queryModifiers;
     private EntityPath entityPath;
 
     protected QueryDslContext(EntityPath entityPath, Map<String, Expression> queryPaths, Map<String,
@@ -47,14 +37,6 @@ public class QueryDslContext {
 
     public static Builder from(EntityPath type) {
         return new Builder(type);
-    }
-
-    void addAnd(Predicate predicate) {
-        predicateBuilder.and(predicate);
-    }
-
-    void addOr(Predicate predicate) {
-        predicateBuilder.or(predicate);
     }
 
     public Expression resolveProjectionPath(String path) {
@@ -73,35 +55,8 @@ public class QueryDslContext {
         return expression;
     }
 
-    public Predicate getPredicate() {
-        return predicateBuilder.getValue();
-    }
-
-    public Expression getProjection() {
-        return projection;
-    }
-
-    void setProjection(Expression projection) {
-        this.projection = projection;
-    }
-
-    public Expression getProjectionOrDefault() {
-        if (projection != null)
-            return projection;
-
-        return entityPath;
-    }
-
     public EntityPath getEntityPath() {
         return entityPath;
-    }
-
-    public QueryModifiers getQueryModifiers() {
-        return queryModifiers;
-    }
-
-    void setQueryModifiers(QueryModifiers queryModifiers) {
-        this.queryModifiers = queryModifiers;
     }
 
     public Map<String, Expression> getQueryPaths() {
@@ -110,14 +65,6 @@ public class QueryDslContext {
 
     public Map<String, Expression> getProjectionPaths() {
         return Collections.unmodifiableMap(projectionPaths);
-    }
-
-    public LinkedList<OrderSpecifier> getOrderSpecifiers() {
-        return orderSpecifiers;
-    }
-
-    void setOrderSpecifiers(LinkedList<OrderSpecifier> orderSpecifiers) {
-        this.orderSpecifiers = orderSpecifiers;
     }
 
     public static class Builder {

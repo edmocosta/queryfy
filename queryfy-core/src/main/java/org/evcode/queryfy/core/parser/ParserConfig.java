@@ -17,18 +17,18 @@ package org.evcode.queryfy.core.parser;
 
 import org.evcode.queryfy.core.lexer.DefaultGrammar;
 import org.evcode.queryfy.core.lexer.Grammar;
-import org.evcode.queryfy.core.parser.functions.CustomFunctionInvoker;
-import org.evcode.queryfy.core.parser.functions.DefaultCustomFunctionInvoker;
+import org.evcode.queryfy.core.parser.functions.DefaultFunctionInvoker;
+import org.evcode.queryfy.core.parser.functions.FunctionInvoker;
 
 public final class ParserConfig {
 
     public static final ParserConfig DEFAULT = ParserConfig.builder().build();
     private final Grammar grammar;
-    private final CustomFunctionInvoker customFunctionInvoker;
+    private final FunctionInvoker functionInvoker;
 
-    private ParserConfig(Grammar grammar, CustomFunctionInvoker customFunctionInvoker) {
+    private ParserConfig(Grammar grammar, FunctionInvoker functionInvoker) {
         this.grammar = grammar;
-        this.customFunctionInvoker = customFunctionInvoker;
+        this.functionInvoker = functionInvoker;
     }
 
     public static Builder builder() {
@@ -39,28 +39,28 @@ public final class ParserConfig {
         return grammar;
     }
 
-    public CustomFunctionInvoker getCustomFunctionInvoker() {
-        return customFunctionInvoker;
+    public FunctionInvoker getFunctionInvoker() {
+        return functionInvoker;
     }
 
     public static class Builder {
 
         private Grammar grammar = new DefaultGrammar();
-        private CustomFunctionInvoker customFunctionInvoker = new DefaultCustomFunctionInvoker();
+        private FunctionInvoker functionInvoker = new DefaultFunctionInvoker();
 
         public Builder withGrammar(final Grammar grammar) {
             this.grammar = grammar;
             return this;
         }
 
-        public Builder withCustomFunctionInvoker(final CustomFunctionInvoker resolver) {
-            this.customFunctionInvoker = resolver;
+        public Builder withFunctionInvoker(final FunctionInvoker resolver) {
+            this.functionInvoker = resolver;
             return this;
         }
 
 
         public ParserConfig build() {
-            return new ParserConfig(grammar, customFunctionInvoker);
+            return new ParserConfig(grammar, functionInvoker);
         }
     }
 }

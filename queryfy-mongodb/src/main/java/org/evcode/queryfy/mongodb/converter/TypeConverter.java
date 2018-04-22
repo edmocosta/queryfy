@@ -13,12 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.evcode.queryfy.core.parser.functions;
 
-public interface CustomFunctionInvoker {
+package org.evcode.queryfy.mongodb.converter;
 
-    Object invoke(String function, Object... args);
+public interface TypeConverter {
 
-    boolean canHandle(String function, Object... args);
-    
+    boolean isSupported(final Class<?> type);
+
+    Object convert(Object value);
 }

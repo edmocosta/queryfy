@@ -198,7 +198,7 @@ public class QueryDslVisitor implements Visitor<Predicate, QueryDslContext> {
 
         node.getOrderSpecifiers().forEach(p -> {
             Order order = p.getOperator() == OrderOperatorType.DESC ? Order.DESC : Order.ASC;
-            orders.add(new OrderSpecifier(order, context.resolveQueryPath(p.getSelector())));
+            orders.add(new OrderSpecifier(order, context.resolveProjectionPath(p.getSelector())));
         });
 
         return orders;

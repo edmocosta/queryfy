@@ -313,7 +313,7 @@ public class QueryParser extends BaseParser<Object> {
 
         return Sequence(functionPrefix, Sequence(QualifiedSelector(), push(match()), function.set((String) pop())),
                 OptionalWS(), Ch('('), OptionalWS(), Optional(Sequence(list.set(new LinkedList<>()), CustomFunctionArguments(list))), OptionalWS(), Ch(')'),
-                push(new CustomFunctionNode(function.get(), list.isSet() ? list.get().toArray() : new Object[]{})));
+                push(new FunctionNode(function.get(), list.isSet() ? list.get().toArray() : new Object[]{})));
     }
 
     Rule CustomFunctionArguments(Var<LinkedList<Object>> list) {
@@ -516,19 +516,19 @@ public class QueryParser extends BaseParser<Object> {
     }
 
     Object parseValue(Object value) {
-        if (value instanceof CustomFunctionNode) {
-            Objects.requireNonNull(config.getCustomFunctionInvoker());
-            CustomFunctionNode functionValue = (CustomFunctionNode) value;
+        if (value instanceof FunctionNode) {
+            Objects.requireNonNull(config.getFunctionInvoker());
+            FunctionNode functionValue = (FunctionNode) value;
 
             if (functionValue.getArguments() != null && functionValue.getArguments().length > 0) {
                 for (int i = 0; i < functionValue.getArguments().length; i++) {
-                    if (functionValue.getArguments()[i] instanceof CustomFunctionNode) {
+                    if (functionValue.getArguments()[i] instanceof FunctionNode) {
                         functionValue.getArguments()[i] = parseValue(functionValue.getArguments()[i]);
                     }
                 }
             }
 
-            Object parsedValue = config.getCustomFunctionInvoker()
+            Object parsedValue = config.getFunctionInvoker()
                     .invoke(functionValue.getFunction(), functionValue.getArguments());
 
             return parsedValue;
