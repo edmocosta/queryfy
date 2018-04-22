@@ -19,7 +19,7 @@ Queryfy is a simple SQL-like language designed to provide a safe and flexible wa
 </dependency>
 ```
 
-#### [QueryDSL](https://github.com/edmocosta/queryfy/wiki/QueryDSL)
+#### QueryDSL
 
 ```xml
 <dependency>
@@ -36,7 +36,7 @@ String query = "select name, age where age > 18 order by name limit 0, 100";
 
 JPAQueryDslParser parser = new JPAQueryDslParser(em);
 
-//Create a evaluation context. All paths added here will be available on the query syntax
+//Create an evaluation context. All paths added here will be available on the query syntax
 QueryDslContext context = QueryDslContext.from(QTest.test)
                 .withPath("name", QTest.test.name)
                 .withPath("age", QTest.test.age)
@@ -49,6 +49,36 @@ JPAEvaluatedQuery jpaQuery = parser.parseAndFind(query, context);
 
 //List applying the projections fields (name and age)
 List<Test> list = jpaQuery.listWithProjections();
+
+```
+
+#### MongoDB (Bson)
+
+```xml
+<dependency>
+    <groupId>org.evcode.queryfy</groupId>
+    <artifactId>queryfy-mongodb</artifactId>
+    <version>1.2.0-SNAPSHOT</version>
+</dependency>
+```
+
+```java
+
+String query = "select name, age where age > 18 order by name limit 0, 100"; 
+MongodbQueryParser parser = new MongodbQueryParser();
+
+//Create an evaluation context. All paths added here will be available on the query syntax
+MongodbContext context = MongodbContext.builder()
+                .withPath("name")
+                .withPath("age")
+                .withPath("otherId", "other.id")
+                .build();
+                
+MongoCollection<Document> collection = ....;
+
+//The parseAndFind method will parse the query and return a MongoDB FindIterable. you can also use the parseAndApply method
+//to set the parameters on an existing FindIterable object.
+FindIterable<Document> result = parser.parseAndFind(collection, collection, query, context);
 
 ```
 
