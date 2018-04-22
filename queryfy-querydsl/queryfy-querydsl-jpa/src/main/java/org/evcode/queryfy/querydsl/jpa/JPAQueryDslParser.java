@@ -16,6 +16,7 @@
 package org.evcode.queryfy.querydsl.jpa;
 
 import com.mysema.query.jpa.impl.JPAQuery;
+import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.OrderSpecifier;
 import org.evcode.queryfy.core.parser.ParserConfig;
 import org.evcode.queryfy.querydsl.core.QueryDslContext;
@@ -24,7 +25,6 @@ import org.evcode.queryfy.querydsl.core.QueryDslEvaluator;
 
 import javax.persistence.EntityManager;
 import java.util.List;
-import java.util.Objects;
 
 public class JPAQueryDslParser {
 
@@ -50,7 +50,7 @@ public class JPAQueryDslParser {
 
     public JPAEvaluatedQuery parseAndFind(String expression, QueryDslContext context, ParserConfig config) {
         QueryDslEvaluationResult evaluationResult = parse(expression, context, config);
-        JPAEvaluatedQuery jpaQuery = new JPAEvaluatedQuery(em, evaluationResult);
+        JPAEvaluatedQuery jpaQuery = new JPAEvaluatedQuery(em, evaluationResult, context.getEntityPath());
         return apply(jpaQuery, context, evaluationResult);
     }
 
@@ -85,10 +85,12 @@ public class JPAQueryDslParser {
 
     public static class JPAEvaluatedQuery extends JPAQuery {
         private QueryDslEvaluationResult evaluationResult;
+        private EntityPath entityPath;
 
-        public JPAEvaluatedQuery(EntityManager em, QueryDslEvaluationResult evaluationResult) {
+        public JPAEvaluatedQuery(EntityManager em, QueryDslEvaluationResult evaluationResult, EntityPath entityPath) {
             super(em);
             this.evaluationResult = evaluationResult;
+            this.entityPath = entityPath;
         }
 
         public QueryDslEvaluationResult getEvaluationResult() {
@@ -96,8 +98,10 @@ public class JPAQueryDslParser {
         }
 
         public <RT> List<RT> listWithProjections() {
-            Objects.requireNonNull(evaluationResult.getProjection());
-            return super.list(evaluationResult.getProjection());
+            if (evaluationResult.getProjection() != null) {
+                return super.list(evaluationResult.getProjection());
+            }
+            return super.list(entityPath);
         }
     }
 }
