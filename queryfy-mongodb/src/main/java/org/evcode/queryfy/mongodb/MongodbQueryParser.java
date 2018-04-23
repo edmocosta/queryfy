@@ -87,7 +87,7 @@ public class MongodbQueryParser {
         }
 
         if (evaluationResult.getOffset() != null) {
-            findIterable.limit(evaluationResult.getOffset().intValue());
+            findIterable.skip(evaluationResult.getOffset().intValue());
         }
 
         if (evaluationResult.getProjection() != null) {
