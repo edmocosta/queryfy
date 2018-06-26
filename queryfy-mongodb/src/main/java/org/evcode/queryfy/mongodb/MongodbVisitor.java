@@ -143,7 +143,7 @@ public class MongodbVisitor implements Visitor<Bson, MongodbContext> {
         return node;
     }
 
-    protected Object asValue(List<Object> nodeValues, MongodbContext context) {
+    protected Iterable<Object> asValue(List<Object> nodeValues, MongodbContext context) {
         return nodeValues.stream()
                 .map(p -> asValue(p, context))
                 .collect(Collectors.toList());
