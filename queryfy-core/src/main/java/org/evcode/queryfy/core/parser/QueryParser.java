@@ -346,7 +346,7 @@ public class QueryParser extends BaseParser<Object> {
 
     Rule LikeOperation() {
         return Sequence(Selector(), WS(), FirstOf(NotLikeOperator(), LikeOperator()),
-                WS(), String(), pushFilterOperation());
+                WS(), FirstOf(String(), CustomFunction()), pushFilterOperation());
     }
 
     Rule EqualOperation() {
