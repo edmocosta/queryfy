@@ -78,7 +78,7 @@ MongoCollection<Document> collection = ....;
 
 //The parseAndFind method will parse the query and return a MongoDB FindIterable. you can also use the parseAndApply method
 //to set the parameters on an existing FindIterable object.
-FindIterable<Document> result = parser.parseAndFind(collection, collection, query, context);
+FindIterable<Document> result = parser.parseAndFind(collection, query, context);
 
 ```
 
