@@ -156,7 +156,7 @@ public class QueryDslVisitor implements Visitor<Predicate, QueryDslContext> {
                 return expression.in(getNodeValues(path, node));
             }
             if (node.getOperator() == ListOperatorType.NOT_IN) {
-                return expression.in(getNodeValues(path, node));
+                return expression.notIn(getNodeValues(path, node));
             }
             if (node.getOperator() == SelectorOperatorType.IS_NULL) {
                 return expression.isNull();
