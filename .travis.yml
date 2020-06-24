@@ -14,7 +14,7 @@ deploy:
     on:
       repo: edmocosta/queryfy
       branch: master
-      jdk: oraclejdk8
+      jdk: openjdk8
   -
     provider: script
     script: chmod +x .travis/deploy.sh && .travis/deploy.sh
@@ -22,4 +22,4 @@ deploy:
     on:
       repo: edmocosta/queryfy
       tags: true
-      jdk: oraclejdk8
+      jdk: openjdk8
