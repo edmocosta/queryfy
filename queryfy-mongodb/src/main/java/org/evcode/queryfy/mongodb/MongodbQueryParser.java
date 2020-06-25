@@ -35,11 +35,11 @@ public class MongodbQueryParser {
         return evaluationResult;
     }
 
-    public <T> FindIterable<T> parseAndfind(MongoCollection<T> collection, String expression, MongodbContext context) {
-        return parseAndfind(collection, expression, context, ParserConfig.DEFAULT);
+    public <T> FindIterable<T> parseAndFind(MongoCollection<T> collection, String expression, MongodbContext context) {
+        return parseAndFind(collection, expression, context, ParserConfig.DEFAULT);
     }
 
-    public <T> FindIterable<T> parseAndfind(MongoCollection<T> collection, String expression, MongodbContext context, ParserConfig config) {
+    public <T> FindIterable<T> parseAndFind(MongoCollection<T> collection, String expression, MongodbContext context, ParserConfig config) {
         FindIterable<T> query = collection.find();
         return parseAndApply(query, expression, context, config);
     }
